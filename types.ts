@@ -21,6 +21,14 @@ export interface Dish {
   color: string;
 }
 
+export interface Auction {
+  id: string;
+  dishId: string;
+  currentBid: number;
+  bidCount: number;
+  endTime: string; // ISO String
+}
+
 export interface RoadmapPhase {
   phase: number;
   title: LocalizedContent;

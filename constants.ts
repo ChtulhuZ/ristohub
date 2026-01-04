@@ -1,4 +1,4 @@
-import { Dish, RoadmapPhase, GlobalTranslations } from './types';
+import { Dish, RoadmapPhase, GlobalTranslations, Auction } from './types';
 
 export const DISHES: Dish[] = [
   {
@@ -14,7 +14,7 @@ export const DISHES: Dish[] = [
     royaltyRate: 0.1,
     auctionEstimateMin: 15000,
     auctionEstimateMax: 20000,
-    imageUrl: 'https://picsum.photos/id/42/800/600', 
+    imageUrl: 'https://images.unsplash.com/photo-1626844131082-256783844137?auto=format&fit=crop&w=800&q=80', 
     type: 'Volume',
     typeLabel: { en: 'Volume', it: 'Volume' },
     color: 'from-yellow-400 to-orange-500'
@@ -50,10 +50,32 @@ export const DISHES: Dish[] = [
     royaltyRate: 0.1,
     auctionEstimateMin: 6000,
     auctionEstimateMax: 8000,
-    imageUrl: 'https://picsum.photos/id/292/800/600', 
+    imageUrl: 'https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=800&q=80', 
     type: 'Luxury',
     typeLabel: { en: 'Luxury', it: 'Lusso' },
     color: 'from-amber-700 to-amber-900'
+  }
+];
+
+// Set end times relative to now for demo purposes
+const now = new Date();
+const timeInTwoDays = new Date(now.getTime() + 48 * 60 * 60 * 1000).toISOString();
+const timeInFourHours = new Date(now.getTime() + 4 * 60 * 60 * 1000).toISOString();
+
+export const AUCTIONS: Auction[] = [
+  {
+    id: 'a1',
+    dishId: '001',
+    currentBid: 15500,
+    bidCount: 14,
+    endTime: timeInTwoDays
+  },
+  {
+    id: 'a2',
+    dishId: '003',
+    currentBid: 7200,
+    bidCount: 8,
+    endTime: timeInFourHours
   }
 ];
 
@@ -105,6 +127,7 @@ export const UI: GlobalTranslations = {
     // Nav
     nav_concept: { en: 'Concept', it: 'Concetto' },
     nav_menu: { en: 'Master Menu', it: 'Master Menu' },
+    nav_auctions: { en: 'Auctions', it: 'Aste' },
     nav_portfolio: { en: 'My Portfolio', it: 'Mio Portafoglio' },
     nav_connect: { en: 'Connect Wallet', it: 'Connetti Wallet' },
     
@@ -153,6 +176,27 @@ export const UI: GlobalTranslations = {
     mkt_est_yield: { en: 'Est. Monthly Yield', it: 'Rendita Mensile Stimata' },
     mkt_btn_view: { en: 'View Analytics & Bid', it: 'Vedi Analisi & Offri' },
     
+    // Auctions
+    auction_title: { en: 'Exclusive Auctions', it: 'Aste Esclusive' },
+    auction_subtitle: { 
+        en: 'Bid on limited edition menu items. Highest bidder wins the NFT rights.', 
+        it: 'Fai offerte su voci di menù in edizione limitata. Il miglior offerente vince i diritti NFT.' 
+    },
+    auction_card_current: { en: 'Current Bid', it: 'Offerta Attuale' },
+    auction_card_ends: { en: 'Ends In', it: 'Termina Tra' },
+    auction_card_bids: { en: 'Bids', it: 'Offerte' },
+    auction_btn_bid: { en: 'Place Bid', it: 'Fai Offerta' },
+    auction_live: { en: 'Live', it: 'Live' },
+
+    // Bid Modal
+    bid_modal_title: { en: 'Place your Bid', it: 'Fai la tua Offerta' },
+    bid_modal_current: { en: 'Current Highest Bid', it: 'Offerta più alta attuale' },
+    bid_modal_your_bid: { en: 'Your Bid (€)', it: 'La tua Offerta (€)' },
+    bid_modal_min_step: { en: 'Minimum markup: €50', it: 'Rialzo minimo: €50' },
+    bid_modal_btn_confirm: { en: 'Confirm Bid', it: 'Conferma Offerta' },
+    bid_modal_btn_cancel: { en: 'Cancel', it: 'Annulla' },
+    bid_modal_success: { en: 'Bid Placed Successfully!', it: 'Offerta Inviata con Successo!' },
+
     // Dish Detail
     detail_back: { en: 'Back to Master Menu', it: 'Torna al Master Menu' },
     detail_oracle_feed: { en: 'Oracle Live Feed (Simulated)', it: 'Feed Oracolo Live (Simulato)' },
@@ -181,6 +225,7 @@ export const UI: GlobalTranslations = {
     dash_th_yield: { en: 'My Yield (30d)', it: 'Mio Rendimento (30gg)' },
     dash_th_actions: { en: 'Actions', it: 'Azioni' },
     dash_btn_manage: { en: 'Manage', it: 'Gestisci' },
+    dash_empty_assets: { en: 'No assets owned. Visit Auctions or Marketplace to invest.', it: 'Nessun asset posseduto. Visita le Aste o il Marketplace per investire.' },
     
     // Footer
     footer_rights: { en: 'Decentralized Gastronomy. Smart Contract Verified.', it: 'Gastronomia Decentralizzata. Smart Contract Verificato.' }

@@ -1,8 +1,8 @@
-import React, { useState, createContext, useContext } from 'react';
+import React, { useState, createContext, useContext, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, ScrollText, Wallet, Menu, X, ChefHat, Globe } from 'lucide-react';
-import { DISHES, ROADMAP, UI } from './constants';
-import { Dish, Language, LocalizedContent } from './types';
+import { LayoutDashboard, ShoppingBag, ScrollText, Wallet, Menu, X, ChefHat, Globe, Gavel, Timer, ArrowRight, CheckCircle } from 'lucide-react';
+import { DISHES, ROADMAP, UI, AUCTIONS } from './constants';
+import { Dish, Language, LocalizedContent, Auction } from './types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 // --- Language Context ---
@@ -37,6 +37,128 @@ const useLanguage = () => {
   return context;
 };
 
+// --- Helper Components ---
+
+const Countdown = ({ targetDate }: { targetDate: string }) => {
+  const calculateTimeLeft = () => {
+    const difference = +new Date(targetDate) - +new Date();
+    let timeLeft = {};
+
+    if (difference > 0) {
+      timeLeft = {
+        days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+        hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      };
+    }
+    return timeLeft;
+  };
+
+  const [timeLeft, setTimeLeft] = useState<{days?: number, hours?: number, minutes?: number, seconds?: number}>(calculateTimeLeft());
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  });
+
+  if (Object.keys(timeLeft).length === 0) {
+    return <span>Auction Ended</span>;
+  }
+
+  return (
+    <div className="flex gap-2 font-mono text-lg font-bold text-amber-500">
+      {timeLeft.days !== undefined && timeLeft.days > 0 && <span>{timeLeft.days}d</span>}
+      <span>{timeLeft.hours}h</span>
+      <span>{timeLeft.minutes}m</span>
+      <span>{timeLeft.seconds}s</span>
+    </div>
+  );
+};
+
+const BidModal = ({ auction, onClose }: { auction: Auction, onClose: () => void }) => {
+    const { t } = useLanguage();
+    const dish = DISHES.find(d => d.id === auction.dishId);
+    const [amount, setAmount] = useState<string>('');
+    const [isSuccess, setIsSuccess] = useState(false);
+
+    if (!dish) return null;
+
+    const handleBid = () => {
+        // Simulate API call
+        setTimeout(() => {
+            setIsSuccess(true);
+            setTimeout(() => {
+                onClose();
+            }, 2000);
+        }, 500);
+    };
+
+    const minBid = auction.currentBid + 50;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+                <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white">
+                    <X size={24} />
+                </button>
+
+                {!isSuccess ? (
+                    <>
+                        <h3 className="text-2xl font-bold text-white mb-2">{t(UI.bid_modal_title)}</h3>
+                        <div className="flex items-center gap-3 mb-6 bg-slate-800 p-3 rounded-lg">
+                            <img src={dish.imageUrl} className="w-12 h-12 rounded-md object-cover" alt="mini" />
+                            <div>
+                                <p className="text-white font-medium">{t(dish.name)}</p>
+                                <p className="text-slate-400 text-xs">NFT #{dish.id}</p>
+                            </div>
+                        </div>
+
+                        <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 mb-6">
+                            <p className="text-sm text-slate-400 mb-1">{t(UI.bid_modal_current)}</p>
+                            <p className="text-2xl font-mono font-bold text-amber-500">€{auction.currentBid.toLocaleString()}</p>
+                        </div>
+
+                        <div className="mb-6">
+                            <label className="block text-sm font-bold text-slate-300 mb-2">{t(UI.bid_modal_your_bid)}</label>
+                            <input 
+                                type="number" 
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                placeholder={`${minBid}`}
+                                className="w-full bg-slate-800 border border-slate-600 rounded-lg p-4 text-white text-lg focus:outline-none focus:border-amber-500 transition-colors"
+                            />
+                            <p className="text-xs text-slate-500 mt-2">{t(UI.bid_modal_min_step)}</p>
+                        </div>
+
+                        <div className="flex gap-4">
+                            <button onClick={onClose} className="flex-1 py-3 font-bold text-slate-300 hover:bg-slate-800 rounded-xl transition-colors">
+                                {t(UI.bid_modal_btn_cancel)}
+                            </button>
+                            <button 
+                                onClick={handleBid}
+                                disabled={!amount || Number(amount) < minBid}
+                                className="flex-1 py-3 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 font-bold rounded-xl transition-colors"
+                            >
+                                {t(UI.bid_modal_btn_confirm)}
+                            </button>
+                        </div>
+                    </>
+                ) : (
+                    <div className="text-center py-8">
+                        <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
+                        <h3 className="text-2xl font-bold text-white mb-2">{t(UI.bid_modal_success)}</h3>
+                        <p className="text-slate-400">Transaction pending...</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
 // --- Components ---
 
 const Navbar = () => {
@@ -63,6 +185,7 @@ const Navbar = () => {
             <div className="ml-10 flex items-baseline space-x-8">
               <Link to="/" className={isActive('/')}>{t(UI.nav_concept)}</Link>
               <Link to="/marketplace" className={isActive('/marketplace')}>{t(UI.nav_menu)}</Link>
+              <Link to="/auctions" className={isActive('/auctions')}>{t(UI.nav_auctions)}</Link>
               <Link to="/dashboard" className={isActive('/dashboard')}>{t(UI.nav_portfolio)}</Link>
             </div>
           </div>
@@ -100,6 +223,7 @@ const Navbar = () => {
         <div className="md:hidden bg-slate-800 pb-4 px-4 border-t border-slate-700">
           <Link to="/" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 hover:text-white border-b border-slate-700">{t(UI.nav_concept)}</Link>
           <Link to="/marketplace" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 hover:text-white border-b border-slate-700">{t(UI.nav_menu)}</Link>
+          <Link to="/auctions" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 hover:text-white border-b border-slate-700">{t(UI.nav_auctions)}</Link>
           <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 hover:text-white">{t(UI.nav_portfolio)}</Link>
         </div>
       )}
@@ -277,6 +401,82 @@ const MarketplacePage = () => {
     );
 };
 
+const AuctionsPage = () => {
+    const { t } = useLanguage();
+    const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
+
+    return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
+            {selectedAuction && (
+                <BidModal auction={selectedAuction} onClose={() => setSelectedAuction(null)} />
+            )}
+
+            <div className="mb-12 text-center">
+                <span className="text-amber-500 font-bold tracking-widest uppercase text-sm">{t(UI.nav_auctions)}</span>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mt-2 mb-4">{t(UI.auction_title)}</h1>
+                <p className="text-slate-400 text-lg max-w-2xl mx-auto">
+                    {t(UI.auction_subtitle)}
+                </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {AUCTIONS.map((auction) => {
+                    const dish = DISHES.find(d => d.id === auction.dishId);
+                    if (!dish) return null;
+                    
+                    return (
+                        <div key={auction.id} className="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 hover:border-amber-500 transition-all shadow-xl shadow-black/40">
+                            <div className="relative h-64 sm:h-80">
+                                <img src={dish.imageUrl} alt={t(dish.name)} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent"></div>
+                                <div className="absolute top-4 left-4">
+                                     <div className="flex items-center gap-2 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase animate-pulse">
+                                        <span className="w-2 h-2 bg-white rounded-full"></span>
+                                        {t(UI.auction_live)}
+                                     </div>
+                                </div>
+                            </div>
+                            <div className="p-8">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h3 className="text-2xl font-bold text-white mb-1">{t(dish.name)}</h3>
+                                        <p className="text-slate-400 text-sm">{t(dish.subtitle)}</p>
+                                    </div>
+                                    <div className="text-right">
+                                         <p className="text-xs text-slate-500 uppercase font-bold">{t(UI.auction_card_bids)}</p>
+                                         <p className="text-xl font-bold text-white">{auction.bidCount}</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-slate-900/50 rounded-xl p-6 mb-6 border border-slate-700/50">
+                                    <div className="grid grid-cols-2 gap-8">
+                                        <div>
+                                            <p className="text-xs text-slate-500 uppercase font-bold mb-1">{t(UI.auction_card_current)}</p>
+                                            <p className="text-3xl font-mono font-bold text-white">€{auction.currentBid.toLocaleString()}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-slate-500 uppercase font-bold mb-1">{t(UI.auction_card_ends)}</p>
+                                            <Countdown targetDate={auction.endTime} />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button 
+                                    onClick={() => setSelectedAuction(auction)}
+                                    className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-all"
+                                >
+                                    <Gavel className="h-5 w-5" />
+                                    {t(UI.auction_btn_bid)}
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
 const DishDetailPage = () => {
     const { t } = useLanguage();
     const location = useLocation();
@@ -403,8 +603,8 @@ const DashboardPage = () => {
                         </div>
                         <h3 className="text-slate-400 font-medium">{t(UI.dash_active)}</h3>
                     </div>
-                    <p className="text-3xl font-bold text-white">2 {t(UI.dash_dishes)}</p>
-                    <p className="text-sm text-slate-500 mt-1">1 Volume, 1 Luxury</p>
+                    <p className="text-3xl font-bold text-white">0 {t(UI.dash_dishes)}</p>
+                    <p className="text-sm text-slate-500 mt-1">0 Volume, 0 Luxury</p>
                 </div>
 
                 <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-2xl border border-slate-700">
@@ -436,29 +636,9 @@ const DashboardPage = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-700">
-                        {/* Mock User Data */}
-                        <tr className="hover:bg-slate-700/50 transition-colors">
-                            <td className="px-6 py-4 flex items-center gap-3">
-                                <img src={DISHES[0].imageUrl} className="w-10 h-10 rounded-md object-cover" alt="Spaghetti" />
-                                <span className="font-bold text-white">{t(DISHES[0].name)}</span>
-                            </td>
-                            <td className="px-6 py-4 text-slate-300">{t(DISHES[0].typeLabel)}</td>
-                            <td className="px-6 py-4 text-slate-300">22 {t(UI.detail_units)}</td>
-                            <td className="px-6 py-4 text-green-400 font-mono">+€26.40</td>
-                            <td className="px-6 py-4 text-right">
-                                <button className="text-amber-500 hover:text-amber-400 text-sm font-medium">{t(UI.dash_btn_manage)}</button>
-                            </td>
-                        </tr>
-                         <tr className="hover:bg-slate-700/50 transition-colors">
-                            <td className="px-6 py-4 flex items-center gap-3">
-                                <img src={DISHES[2].imageUrl} className="w-10 h-10 rounded-md object-cover" alt="Roastbeef" />
-                                <span className="font-bold text-white">{t(DISHES[2].name)}</span>
-                            </td>
-                            <td className="px-6 py-4 text-slate-300">{t(DISHES[2].typeLabel)}</td>
-                            <td className="px-6 py-4 text-slate-300">4 {t(UI.detail_units)}</td>
-                            <td className="px-6 py-4 text-green-400 font-mono">+€8.80</td>
-                            <td className="px-6 py-4 text-right">
-                                <button className="text-amber-500 hover:text-amber-400 text-sm font-medium">{t(UI.dash_btn_manage)}</button>
+                        <tr>
+                            <td colSpan={5} className="px-6 py-8 text-center text-slate-500 italic">
+                                {t(UI.dash_empty_assets)}
                             </td>
                         </tr>
                     </tbody>
@@ -500,6 +680,7 @@ export default function App() {
               <Routes>
                   <Route path="/" element={<HomePage />} />
                   <Route path="/marketplace" element={<MarketplacePage />} />
+                  <Route path="/auctions" element={<AuctionsPage />} />
                   <Route path="/dish/:id" element={<DishDetailPage />} />
                   <Route path="/dashboard" element={<DashboardPage />} />
               </Routes>
