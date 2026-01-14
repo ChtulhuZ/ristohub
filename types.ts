@@ -21,6 +21,15 @@ export interface Dish {
   color: string;
 }
 
+export interface CustomPizza {
+  id: string;
+  name: string;
+  toppings: string[];
+  basePrice: number;
+  totalSold: number;
+  totalEarned: number;
+}
+
 export interface Auction {
   id: string;
   dishId: string;

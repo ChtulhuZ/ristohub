@@ -123,11 +123,22 @@ export const ROADMAP: RoadmapPhase[] = [
   }
 ];
 
+export const TOPPINGS = [
+    { id: 'tomato', name: { en: 'San Marzano Tomato', it: 'Pomodoro San Marzano' }, price: 1.5 },
+    { id: 'mozzarella', name: { en: 'Buffalo Mozzarella', it: 'Mozzarella di Bufala' }, price: 2.0 },
+    { id: 'basil', name: { en: 'Fresh Basil', it: 'Basilico Fresco' }, price: 0.5 },
+    { id: 'truffle', name: { en: 'Black Truffle', it: 'Tartufo Nero' }, price: 5.0 },
+    { id: 'gold', name: { en: 'Edible Gold Leaves', it: 'Foglia d\'Oro Commestibile' }, price: 10.0 },
+    { id: 'prosciutto', name: { en: 'Parma Ham', it: 'Prosciutto di Parma' }, price: 3.0 },
+    { id: 'nduja', name: { en: 'Spicy Nduja', it: 'Nduja Calabra' }, price: 2.5 }
+];
+
 export const UI: GlobalTranslations = {
     // Nav
     nav_concept: { en: 'Concept', it: 'Concetto' },
     nav_menu: { en: 'Master Menu', it: 'Master Menu' },
     nav_auctions: { en: 'Auctions', it: 'Aste' },
+    nav_pizza_lab: { en: 'Pizza Lab', it: 'Pizza Lab' },
     nav_portfolio: { en: 'My Portfolio', it: 'Mio Portafoglio' },
     nav_connect: { en: 'Connect Wallet', it: 'Connetti Wallet' },
     
@@ -188,6 +199,20 @@ export const UI: GlobalTranslations = {
     auction_btn_bid: { en: 'Place Bid', it: 'Fai Offerta' },
     auction_live: { en: 'Live', it: 'Live' },
 
+    // Pizza Lab
+    pizza_lab_title: { en: 'Pizza Lab: Creator Economy', it: 'Pizza Lab: Creator Economy' },
+    pizza_lab_subtitle: { 
+        en: 'Build your unique pizza. Mint the recipe as an NFT and earn 100% of the revenue from every unit sold!', 
+        it: 'Crea la tua pizza unica. Conia la ricetta come NFT e guadagna il 100% degli incassi da ogni unità venduta!' 
+    },
+    pizza_lab_name_label: { en: 'Pizza Name', it: 'Nome della Pizza' },
+    pizza_lab_toppings: { en: 'Select Toppings', it: 'Seleziona Ingredienti' },
+    pizza_lab_summary: { en: 'Recipe Summary', it: 'Riepilogo Ricetta' },
+    pizza_lab_total_price: { en: 'Consumer Unit Price', it: 'Prezzo Unitario Consumatore' },
+    pizza_lab_mint_btn: { en: 'Mint Recipe & Start Earning', it: 'Conia Ricetta & Inizia a Guadagnare' },
+    pizza_lab_incassi: { en: 'You earn 100% of these sales!', it: 'Guadagni il 100% di queste vendite!' },
+    pizza_lab_success: { en: 'Pizza Created! It\'s now serving at GastroShare DAO.', it: 'Pizza Creata! È ora servita presso GastroShare DAO.' },
+
     // Bid Modal
     bid_modal_title: { en: 'Place your Bid', it: 'Fai la tua Offerta' },
     bid_modal_current: { en: 'Current Highest Bid', it: 'Offerta più alta attuale' },
@@ -219,6 +244,7 @@ export const UI: GlobalTranslations = {
     dash_unclaimed: { en: 'Unclaimed Yield', it: 'Rendita Non Riscossa' },
     dash_btn_claim: { en: 'Claim', it: 'Riscuoti' },
     dash_my_assets: { en: 'My Assets', it: 'I Miei Asset' },
+    dash_my_pizzas: { en: 'My Created Pizzas (100% Revenue)', it: 'Mie Pizze Create (100% Incassi)' },
     dash_th_dish: { en: 'Dish', it: 'Piatto' },
     dash_th_type: { en: 'Type', it: 'Tipo' },
     dash_th_vol: { en: 'Daily Vol', it: 'Vol Giornaliero' },
@@ -226,6 +252,7 @@ export const UI: GlobalTranslations = {
     dash_th_actions: { en: 'Actions', it: 'Azioni' },
     dash_btn_manage: { en: 'Manage', it: 'Gestisci' },
     dash_empty_assets: { en: 'No assets owned. Visit Auctions or Marketplace to invest.', it: 'Nessun asset posseduto. Visita le Aste o il Marketplace per investire.' },
+    dash_empty_pizzas: { en: 'No custom pizzas created yet. Visit Pizza Lab!', it: 'Nessuna pizza creata. Visita il Pizza Lab!' },
     
     // Footer
     footer_rights: { en: 'Decentralized Gastronomy. Smart Contract Verified.', it: 'Gastronomia Decentralizzata. Smart Contract Verificato.' }

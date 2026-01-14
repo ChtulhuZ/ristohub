@@ -1,8 +1,8 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, ScrollText, Wallet, Menu, X, ChefHat, Globe, Gavel, Timer, ArrowRight, CheckCircle } from 'lucide-react';
-import { DISHES, ROADMAP, UI, AUCTIONS } from './constants';
-import { Dish, Language, LocalizedContent, Auction } from './types';
+import { LayoutDashboard, ShoppingBag, ScrollText, Wallet, Menu, X, ChefHat, Globe, Gavel, Timer, ArrowRight, CheckCircle, Pizza, Plus, Zap, ChefHat as ChefIcon } from 'lucide-react';
+import { DISHES, ROADMAP, UI, AUCTIONS, TOPPINGS } from './constants';
+import { Dish, Language, LocalizedContent, Auction, CustomPizza } from './types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 // --- Language Context ---
@@ -36,6 +36,10 @@ const useLanguage = () => {
   }
   return context;
 };
+
+// --- Global State for Custom Pizzas (Simplified) ---
+// Using a simple state mock since we don't have a database
+let globalCustomPizzas: CustomPizza[] = [];
 
 // --- Helper Components ---
 
@@ -88,7 +92,6 @@ const BidModal = ({ auction, onClose }: { auction: Auction, onClose: () => void 
     if (!dish) return null;
 
     const handleBid = () => {
-        // Simulate API call
         setTimeout(() => {
             setIsSuccess(true);
             setTimeout(() => {
@@ -177,7 +180,7 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center gap-2">
-            <ChefHat className="h-8 w-8 text-amber-500" />
+            <ChefIcon className="h-8 w-8 text-amber-500" />
             <span className="text-xl font-bold tracking-wider text-white">GastroShare<span className="text-amber-500">DAO</span></span>
           </Link>
           
@@ -186,6 +189,7 @@ const Navbar = () => {
               <Link to="/" className={isActive('/')}>{t(UI.nav_concept)}</Link>
               <Link to="/marketplace" className={isActive('/marketplace')}>{t(UI.nav_menu)}</Link>
               <Link to="/auctions" className={isActive('/auctions')}>{t(UI.nav_auctions)}</Link>
+              <Link to="/pizza-lab" className={isActive('/pizza-lab')}>{t(UI.nav_pizza_lab)}</Link>
               <Link to="/dashboard" className={isActive('/dashboard')}>{t(UI.nav_portfolio)}</Link>
             </div>
           </div>
@@ -224,6 +228,7 @@ const Navbar = () => {
           <Link to="/" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 hover:text-white border-b border-slate-700">{t(UI.nav_concept)}</Link>
           <Link to="/marketplace" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 hover:text-white border-b border-slate-700">{t(UI.nav_menu)}</Link>
           <Link to="/auctions" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 hover:text-white border-b border-slate-700">{t(UI.nav_auctions)}</Link>
+          <Link to="/pizza-lab" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 hover:text-white border-b border-slate-700">{t(UI.nav_pizza_lab)}</Link>
           <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 hover:text-white">{t(UI.nav_portfolio)}</Link>
         </div>
       )}
@@ -477,6 +482,159 @@ const AuctionsPage = () => {
     );
 };
 
+const PizzaLabPage = () => {
+    const { t, lang } = useLanguage();
+    const [name, setName] = useState('');
+    const [selectedToppings, setSelectedToppings] = useState<string[]>([]);
+    const [isMinted, setIsMinted] = useState(false);
+
+    const basePrice = 6.0;
+
+    const toggleTopping = (id: string) => {
+        if (selectedToppings.includes(id)) {
+            setSelectedToppings(selectedToppings.filter(t => t !== id));
+        } else {
+            setSelectedToppings([...selectedToppings, id]);
+        }
+    };
+
+    const calculateTotal = () => {
+        const toppingsPrice = selectedToppings.reduce((acc, id) => {
+            const topping = TOPPINGS.find(t => t.id === id);
+            return acc + (topping ? topping.price : 0);
+        }, 0);
+        return basePrice + toppingsPrice;
+    };
+
+    const handleMint = () => {
+        if (!name.trim()) return;
+        
+        setIsMinted(true);
+        const newPizza: CustomPizza = {
+            id: Date.now().toString(),
+            name: name,
+            toppings: selectedToppings,
+            basePrice: calculateTotal(),
+            totalSold: 0, // In a real app this would start at 0, using mock data for demo
+            totalEarned: 0
+        };
+        // Mocking some sales for immediate gratification in dashboard
+        newPizza.totalSold = Math.floor(Math.random() * 10); 
+        newPizza.totalEarned = newPizza.totalSold * newPizza.basePrice;
+
+        globalCustomPizzas.push(newPizza);
+    };
+
+    if (isMinted) {
+        return (
+            <div className="max-w-2xl mx-auto px-4 py-24 text-center">
+                <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700 shadow-2xl">
+                    <CheckCircle className="w-24 h-24 text-green-500 mx-auto mb-6" />
+                    <h2 className="text-3xl font-bold text-white mb-4">{t(UI.pizza_lab_success)}</h2>
+                    <p className="text-slate-400 mb-8">{t(UI.pizza_lab_incassi)}</p>
+                    <Link to="/dashboard" className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 px-8 rounded-full transition-colors inline-block">
+                        {t(UI.nav_portfolio)}
+                    </Link>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="mb-12">
+                <span className="text-amber-500 font-bold tracking-widest uppercase text-sm">GastroShare Create</span>
+                <h1 className="text-4xl md:text-5xl font-bold text-white mt-2 mb-4">{t(UI.pizza_lab_title)}</h1>
+                <p className="text-slate-400 text-lg max-w-2xl">
+                    {t(UI.pizza_lab_subtitle)}
+                </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                {/* Editor */}
+                <div>
+                    <div className="mb-8">
+                        <label className="block text-sm font-bold text-slate-300 mb-2">{t(UI.pizza_lab_name_label)}</label>
+                        <input 
+                            type="text" 
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="w-full bg-slate-800 border border-slate-600 rounded-xl p-4 text-white text-lg focus:outline-none focus:border-amber-500 transition-colors placeholder-slate-600"
+                            placeholder="Ex. The Spicy Baron"
+                        />
+                    </div>
+
+                    <h3 className="text-xl font-bold text-white mb-4">{t(UI.pizza_lab_toppings)}</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                        {TOPPINGS.map((topping) => (
+                            <button 
+                                key={topping.id}
+                                onClick={() => toggleTopping(topping.id)}
+                                className={`p-4 rounded-xl border flex justify-between items-center transition-all ${selectedToppings.includes(topping.id) ? 'bg-amber-500/10 border-amber-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500'}`}
+                            >
+                                <span className="text-sm font-medium">{t(topping.name)}</span>
+                                <span className="text-xs font-mono opacity-70">+€{topping.price.toFixed(2)}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Preview */}
+                <div className="lg:pl-12">
+                    <div className="sticky top-24 bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl">
+                        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-700">
+                             <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center">
+                                <Pizza className="w-8 h-8 text-amber-500" />
+                             </div>
+                             <div>
+                                 <h3 className="text-xl font-bold text-white">{name || 'Untitled Pizza'}</h3>
+                                 <p className="text-slate-400 text-sm">Chef {lang === 'en' ? 'You' : 'Tu'}</p>
+                             </div>
+                        </div>
+
+                        <div className="mb-6">
+                            <h4 className="text-xs uppercase text-slate-500 font-bold mb-3">{t(UI.pizza_lab_summary)}</h4>
+                            <div className="flex justify-between text-sm text-slate-300 mb-2">
+                                <span>Base Margherita</span>
+                                <span>€{basePrice.toFixed(2)}</span>
+                            </div>
+                            {selectedToppings.map(id => {
+                                const topping = TOPPINGS.find(t => t.id === id);
+                                if(!topping) return null;
+                                return (
+                                    <div key={id} className="flex justify-between text-sm text-slate-300 mb-2">
+                                        <span>+ {t(topping.name)}</span>
+                                        <span>€{topping.price.toFixed(2)}</span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        <div className="flex justify-between items-center py-4 border-t border-slate-700 mb-6">
+                            <span className="text-slate-400 font-medium">{t(UI.pizza_lab_total_price)}</span>
+                            <span className="text-3xl font-bold text-white">€{calculateTotal().toFixed(2)}</span>
+                        </div>
+
+                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 mb-6 flex items-center gap-3">
+                            <Zap className="w-5 h-5 text-amber-500" />
+                            <p className="text-xs text-amber-200 font-bold uppercase">{t(UI.pizza_lab_incassi)}</p>
+                        </div>
+
+                        <button 
+                            onClick={handleMint}
+                            disabled={!name.trim()}
+                            className="w-full bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-slate-900 text-lg font-bold py-4 rounded-xl shadow-lg shadow-amber-900/20 transition-all flex items-center justify-center gap-2"
+                        >
+                            <Plus className="w-5 h-5" />
+                            {t(UI.pizza_lab_mint_btn)}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const DishDetailPage = () => {
     const { t } = useLanguage();
     const location = useLocation();
@@ -580,6 +738,10 @@ const DishDetailPage = () => {
 
 const DashboardPage = () => {
     const { t } = useLanguage();
+    
+    // Calculate totals including custom pizzas
+    const customRevenue = globalCustomPizzas.reduce((acc, p) => acc + p.totalEarned, 0);
+
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <h1 className="text-3xl font-bold text-white mb-8">{t(UI.dash_title)}</h1>
@@ -592,7 +754,7 @@ const DashboardPage = () => {
                         </div>
                         <h3 className="text-slate-400 font-medium">{t(UI.dash_bal)}</h3>
                     </div>
-                    <p className="text-3xl font-bold text-white">€12,450.00</p>
+                    <p className="text-3xl font-bold text-white">€{(12450 + customRevenue).toLocaleString()}</p>
                     <p className="text-sm text-green-400 mt-1">+€340.00 ({t(UI.dash_last_30)})</p>
                 </div>
                 
@@ -603,8 +765,8 @@ const DashboardPage = () => {
                         </div>
                         <h3 className="text-slate-400 font-medium">{t(UI.dash_active)}</h3>
                     </div>
-                    <p className="text-3xl font-bold text-white">0 {t(UI.dash_dishes)}</p>
-                    <p className="text-sm text-slate-500 mt-1">0 Volume, 0 Luxury</p>
+                    <p className="text-3xl font-bold text-white">{globalCustomPizzas.length} {t(UI.dash_dishes)}</p>
+                    <p className="text-sm text-slate-500 mt-1">{globalCustomPizzas.length} Created</p>
                 </div>
 
                 <div className="bg-gradient-to-br from-slate-800 to-slate-900 p-6 rounded-2xl border border-slate-700">
@@ -615,7 +777,7 @@ const DashboardPage = () => {
                         <h3 className="text-slate-400 font-medium">{t(UI.dash_unclaimed)}</h3>
                     </div>
                     <div className="flex justify-between items-end">
-                        <p className="text-3xl font-bold text-white">€156.40</p>
+                        <p className="text-3xl font-bold text-white">€{(156.40 + customRevenue).toLocaleString()}</p>
                         <button className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 px-4 rounded-full transition-colors">
                             {t(UI.dash_btn_claim)}
                         </button>
@@ -623,8 +785,9 @@ const DashboardPage = () => {
                 </div>
             </div>
 
+            {/* Auction/Market Assets */}
             <h2 className="text-xl font-bold text-white mb-6">{t(UI.dash_my_assets)}</h2>
-            <div className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
+            <div className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700 mb-12">
                 <table className="w-full text-left">
                     <thead className="bg-slate-900/50 text-slate-400 text-xs uppercase">
                         <tr>
@@ -644,6 +807,57 @@ const DashboardPage = () => {
                     </tbody>
                 </table>
             </div>
+
+            {/* Created Pizzas */}
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-white">{t(UI.dash_my_pizzas)}</h2>
+                <Link to="/pizza-lab" className="text-sm text-amber-500 hover:text-amber-400 font-bold flex items-center gap-1">
+                    <Plus size={16} /> {t(UI.nav_pizza_lab)}
+                </Link>
+            </div>
+            
+            <div className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700">
+                <table className="w-full text-left">
+                    <thead className="bg-slate-900/50 text-slate-400 text-xs uppercase">
+                        <tr>
+                            <th className="px-6 py-4">{t(UI.pizza_lab_name_label)}</th>
+                            <th className="px-6 py-4">{t(UI.pizza_lab_total_price)}</th>
+                            <th className="px-6 py-4">Total Sold</th>
+                            <th className="px-6 py-4 text-green-400">Total Earned (100%)</th>
+                            <th className="px-6 py-4 text-right">{t(UI.dash_th_actions)}</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-700">
+                        {globalCustomPizzas.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="px-6 py-8 text-center text-slate-500 italic">
+                                    {t(UI.dash_empty_pizzas)}
+                                </td>
+                            </tr>
+                        ) : (
+                            globalCustomPizzas.map((pizza) => (
+                                <tr key={pizza.id} className="hover:bg-slate-700/50 transition-colors">
+                                    <td className="px-6 py-4 flex items-center gap-3">
+                                        <div className="w-8 h-8 bg-amber-500/20 rounded-full flex items-center justify-center">
+                                            <Pizza size={16} className="text-amber-500" />
+                                        </div>
+                                        <div>
+                                            <span className="font-bold text-white block">{pizza.name}</span>
+                                            <span className="text-xs text-slate-500">{pizza.toppings.length} toppings</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 text-slate-300">€{pizza.basePrice.toFixed(2)}</td>
+                                    <td className="px-6 py-4 text-slate-300">{pizza.totalSold}</td>
+                                    <td className="px-6 py-4 text-green-400 font-mono font-bold">+€{pizza.totalEarned.toLocaleString()}</td>
+                                    <td className="px-6 py-4 text-right">
+                                        <button className="text-amber-500 hover:text-amber-400 text-sm font-medium">{t(UI.dash_btn_manage)}</button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
@@ -654,7 +868,7 @@ const Footer = () => {
         <footer className="bg-slate-950 border-t border-slate-800 py-12 mt-12">
             <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
                 <div className="flex items-center gap-2">
-                    <ChefHat className="h-6 w-6 text-slate-600" />
+                    <ChefIcon className="h-6 w-6 text-slate-600" />
                     <span className="text-slate-500 font-bold">GastroShare DAO</span>
                 </div>
                 <div className="text-slate-600 text-sm">
@@ -681,6 +895,7 @@ export default function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/marketplace" element={<MarketplacePage />} />
                   <Route path="/auctions" element={<AuctionsPage />} />
+                  <Route path="/pizza-lab" element={<PizzaLabPage />} />
                   <Route path="/dish/:id" element={<DishDetailPage />} />
                   <Route path="/dashboard" element={<DashboardPage />} />
               </Routes>
