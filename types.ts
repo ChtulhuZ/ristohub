@@ -30,6 +30,17 @@ export interface CustomPizza {
   totalEarned: number;
 }
 
+export interface Membership {
+  id: string;
+  name: LocalizedContent;
+  price: number;
+  supply: number;
+  benefit: LocalizedContent;
+  maxAuctions: number; // -1 for unlimited
+  imageUrl: string;
+  color: string;
+}
+
 export interface Auction {
   id: string;
   dishId: string;

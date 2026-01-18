@@ -1,4 +1,4 @@
-import { Dish, RoadmapPhase, GlobalTranslations, Auction } from './types';
+import { Dish, RoadmapPhase, GlobalTranslations, Auction, Membership } from './types';
 
 export const DISHES: Dish[] = [
   {
@@ -24,7 +24,7 @@ export const DISHES: Dish[] = [
     name: { en: 'The Sovereign Margherita', it: 'The Sovereign Margherita' },
     subtitle: { en: 'Pizza Margherita', it: 'Pizza Margherita' },
     description: {
-        en: 'The "Blue Chip" of the menu. Highest safety rating with massive volume.',
+        en: 'The "Blue chip" of the menu. Highest safety rating with massive volume.',
         it: 'La "Blue Chip" del menù. Massima sicurezza con volumi enormi.'
     },
     price: 9,
@@ -55,6 +55,39 @@ export const DISHES: Dish[] = [
     typeLabel: { en: 'Luxury', it: 'Lusso' },
     color: 'from-amber-700 to-amber-900'
   }
+];
+
+export const MEMBERSHIPS: Membership[] = [
+    {
+        id: 'm1',
+        name: { en: 'The Commis', it: 'The Commis' },
+        price: 5,
+        supply: 1000,
+        benefit: { en: 'Participate in 1 Auction', it: 'Partecipa ad 1 Asta' },
+        maxAuctions: 1,
+        imageUrl: 'https://images.unsplash.com/photo-1595053826286-2e59efd9ff18?auto=format&fit=crop&w=800&q=80',
+        color: 'from-orange-700 to-orange-900'
+    },
+    {
+        id: 'm2',
+        name: { en: 'The Sous-Chef', it: 'The Sous-Chef' },
+        price: 50,
+        supply: 500,
+        benefit: { en: 'Participate in 10 Auctions', it: 'Partecipa a 10 Aste' },
+        maxAuctions: 10,
+        imageUrl: 'https://images.unsplash.com/photo-1556910103-1c02745a30bf?auto=format&fit=crop&w=800&q=80',
+        color: 'from-slate-300 to-slate-500'
+    },
+    {
+        id: 'm3',
+        name: { en: 'The Executive Master', it: 'The Executive Master' },
+        price: 500,
+        supply: 50,
+        benefit: { en: 'Unlimited Auction Access', it: 'Accesso Aste Illimitato' },
+        maxAuctions: -1,
+        imageUrl: 'https://images.unsplash.com/photo-1622675363311-ac97f3a9a835?auto=format&fit=crop&w=800&q=80',
+        color: 'from-yellow-300 to-yellow-600'
+    }
 ];
 
 // Set end times relative to now for demo purposes
@@ -138,6 +171,7 @@ export const UI: GlobalTranslations = {
     nav_concept: { en: 'Concept', it: 'Concetto' },
     nav_menu: { en: 'Master Menu', it: 'Master Menu' },
     nav_auctions: { en: 'Auctions', it: 'Aste' },
+    nav_ticket_auction: { en: 'Ticket Auction', it: 'Ticket Auction' },
     nav_pizza_lab: { en: 'Pizza Lab', it: 'Pizza Lab' },
     nav_portfolio: { en: 'My Portfolio', it: 'Mio Portafoglio' },
     nav_connect: { en: 'Connect Wallet', it: 'Connetti Wallet' },
@@ -213,6 +247,22 @@ export const UI: GlobalTranslations = {
     pizza_lab_incassi: { en: 'You earn 100% of these sales!', it: 'Guadagni il 100% di queste vendite!' },
     pizza_lab_success: { en: 'Pizza Created! It\'s now serving at GastroShare DAO.', it: 'Pizza Creata! È ora servita presso GastroShare DAO.' },
 
+    // Memberships
+    membership_title: { en: 'Auction Access Cards', it: 'Ticket Auction' },
+    membership_subtitle: { en: 'Mandatory tickets to participate in auctions. Choose your tier.', it: 'Biglietti obbligatori per partecipare alle aste. Scegli il tuo livello.' },
+    membership_supply: { en: 'Supply', it: 'Disponibilità' },
+    membership_buy: { en: 'Buy Ticket', it: 'Compra Biglietto' },
+    membership_owned: { en: 'Owned', it: 'Posseduto' },
+
+    // Referral
+    ref_title: { en: 'Referral Rewards', it: 'Programma Referral' },
+    ref_desc: { en: 'Share your code. For every 10 tickets bought with your code, you get 1 free ticket!', it: 'Condividi il tuo codice. Per ogni 10 ticket acquistati con il tuo codice, ne ricevi 1 gratis!' },
+    ref_code_label: { en: 'Your Referral Code', it: 'Il Tuo Codice Referral' },
+    ref_progress_label: { en: 'Progress to Free Ticket', it: 'Progresso Ticket Gratis' },
+    ref_redeem_btn: { en: 'Redeem Free Ticket', it: 'Riscatta Ticket Gratis' },
+    ref_copy: { en: 'Copy Code', it: 'Copia Codice' },
+    ref_copied: { en: 'Copied!', it: 'Copiato!' },
+
     // Bid Modal
     bid_modal_title: { en: 'Place your Bid', it: 'Fai la tua Offerta' },
     bid_modal_current: { en: 'Current Highest Bid', it: 'Offerta più alta attuale' },
@@ -221,6 +271,8 @@ export const UI: GlobalTranslations = {
     bid_modal_btn_confirm: { en: 'Confirm Bid', it: 'Conferma Offerta' },
     bid_modal_btn_cancel: { en: 'Cancel', it: 'Annulla' },
     bid_modal_success: { en: 'Bid Placed Successfully!', it: 'Offerta Inviata con Successo!' },
+    bid_modal_no_ticket: { en: 'No Auction Ticket!', it: 'Nessun Biglietto Asta!' },
+    bid_modal_buy_ticket: { en: 'Buy a Ticket to Bid', it: 'Compra un Biglietto per Offrire' },
 
     // Dish Detail
     detail_back: { en: 'Back to Master Menu', it: 'Torna al Master Menu' },
@@ -245,6 +297,7 @@ export const UI: GlobalTranslations = {
     dash_btn_claim: { en: 'Claim', it: 'Riscuoti' },
     dash_my_assets: { en: 'My Assets', it: 'I Miei Asset' },
     dash_my_pizzas: { en: 'My Created Pizzas (100% Revenue)', it: 'Mie Pizze Create (100% Incassi)' },
+    dash_my_tickets: { en: 'My Auction Tickets', it: 'I Miei Ticket Asta' },
     dash_th_dish: { en: 'Dish', it: 'Piatto' },
     dash_th_type: { en: 'Type', it: 'Tipo' },
     dash_th_vol: { en: 'Daily Vol', it: 'Vol Giornaliero' },
@@ -253,6 +306,7 @@ export const UI: GlobalTranslations = {
     dash_btn_manage: { en: 'Manage', it: 'Gestisci' },
     dash_empty_assets: { en: 'No assets owned. Visit Auctions or Marketplace to invest.', it: 'Nessun asset posseduto. Visita le Aste o il Marketplace per investire.' },
     dash_empty_pizzas: { en: 'No custom pizzas created yet. Visit Pizza Lab!', it: 'Nessuna pizza creata. Visita il Pizza Lab!' },
+    dash_empty_tickets: { en: 'No tickets owned. Visit Ticket Auction.', it: 'Nessun biglietto posseduto. Visita Ticket Auction.' },
     
     // Footer
     footer_rights: { en: 'Decentralized Gastronomy. Smart Contract Verified.', it: 'Gastronomia Decentralizzata. Smart Contract Verificato.' }
