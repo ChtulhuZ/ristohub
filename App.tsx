@@ -260,13 +260,27 @@ const Navbar = () => {
         </div>
       </div>
       {isOpen && (
-        <div className="md:hidden bg-slate-800 pb-4 px-4 border-t border-slate-700">
+        <div className="md:hidden bg-slate-800 pb-4 px-4 border-t border-slate-700 animate-in slide-in-from-top duration-300">
           <Link to="/" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 border-b border-slate-700">{t(UI.nav_concept)}</Link>
           <Link to="/marketplace" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 border-b border-slate-700">{t(UI.nav_menu)}</Link>
           <Link to="/auctions" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 border-b border-slate-700">{t(UI.nav_auctions)}</Link>
           <Link to="/tickets" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 border-b border-slate-700">{t(UI.nav_ticket_auction)}</Link>
           <Link to="/pizza-lab" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 border-b border-slate-700">{t(UI.nav_pizza_lab)}</Link>
-          <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300">{t(UI.nav_portfolio)}</Link>
+          <Link to="/dashboard" onClick={() => setIsOpen(false)} className="block py-3 text-gray-300 border-b border-slate-700">{t(UI.nav_portfolio)}</Link>
+          
+          <div className="py-4 flex flex-col gap-4">
+            <button 
+              onClick={() => setLang(lang === 'en' ? 'it' : 'en')} 
+              className="flex items-center justify-center gap-3 text-amber-500 bg-slate-900 py-3 rounded-xl border border-amber-500/20 active:scale-95 transition-all"
+            >
+              <Globe className="h-5 w-5" />
+              <span className="font-bold uppercase tracking-widest">{lang === 'it' ? 'English (EN)' : 'Italiano (IT)'}</span>
+            </button>
+            <button className="bg-amber-500 text-slate-900 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 transition-all">
+              <Wallet className="h-5 w-5" />
+              {t(UI.nav_connect)}
+            </button>
+          </div>
         </div>
       )}
     </nav>
