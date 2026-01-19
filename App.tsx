@@ -1,9 +1,25 @@
-import React, { useState, createContext, useContext, useEffect, useMemo } from 'react';
-import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, ScrollText, Wallet, Menu, X, ChefHat, Globe, Gavel, Timer, ArrowRight, CheckCircle, Pizza, Plus, Zap, Ticket, Share2, Copy, Gift, Activity } from 'lucide-react';
-import { DISHES, ROADMAP, UI, AUCTIONS, TOPPINGS, MEMBERSHIPS } from './constants';
+import React, { useState, createContext, useContext, useEffect, useMemo, useCallback } from 'react';
+import { HashRouter, Routes, Route, Link, useLocation, useParams } from 'react-router-dom';
+import { 
+  LayoutDashboard, 
+  ShoppingBag, 
+  ScrollText, 
+  Wallet, 
+  Menu, 
+  X, 
+  ChefHat, 
+  Globe, 
+  Gavel, 
+  CheckCircle, 
+  Pizza, 
+  Plus, 
+  Ticket, 
+  Gift, 
+  Activity 
+} from 'lucide-react';
+import { DISHES, UI, AUCTIONS, TOPPINGS, MEMBERSHIPS } from './constants';
 import { Dish, Language, LocalizedContent, Auction, CustomPizza, Membership } from './types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 // --- Contexts & State ---
 
@@ -15,11 +31,14 @@ const LanguageContext = createContext<{
 
 const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [lang, setLang] = useState<Language>('it');
-  const t = (content: LocalizedContent) => content[lang] || content['en'];
+  const t = useCallback((content: LocalizedContent) => content[lang] || content['en'], [lang]);
+  
+  const value = useMemo(() => ({ lang, setLang, t }), [lang, setLang, t]);
+
   return (
-    <LanguageContext.Provider value={{ lang, setLang, t }}>
+    <LanguageContext.Provider value={value}>
       {children}
-    </LanguageProvider>
+    </LanguageContext.Provider>
   );
 };
 
@@ -45,7 +64,7 @@ const LiveOrderFeed = () => {
   useEffect(() => {
     // Initial random orders
     const initialOrders = Array.from({ length: 3 }).map((_, i) => ({
-      id: Math.random().toString(36).substr(2, 9).toUpperCase(),
+      id: Math.random().toString(36).substring(2, 11).toUpperCase(),
       dish: DISHES[Math.floor(Math.random() * DISHES.length)],
       timestamp: new Date(Date.now() - (i * 120000)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }));
@@ -53,19 +72,18 @@ const LiveOrderFeed = () => {
 
     const interval = setInterval(() => {
       const newOrder = {
-        id: Math.random().toString(36).substr(2, 9).toUpperCase(),
+        id: Math.random().toString(36).substring(2, 11).toUpperCase(),
         dish: DISHES[Math.floor(Math.random() * DISHES.length)],
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
       setOrders(prev => [newOrder, ...prev].slice(0, 6));
-    }, 4500); // New order every 4.5 seconds
+    }, 4500);
 
     return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="bg-white text-slate-900 rounded-sm shadow-xl p-4 sm:p-6 font-mono border-t-4 border-amber-500 relative overflow-hidden transform rotate-1 sm:rotate-2">
-      {/* Receipt zig-zag effect top/bottom could be done with CSS, but let's stick to sleek panel */}
       <div className="absolute top-0 right-0 p-2 opacity-10">
         <Activity size={48} />
       </div>
@@ -110,7 +128,7 @@ const LiveOrderFeed = () => {
 };
 
 const Countdown = ({ targetDate }: { targetDate: string }) => {
-  const calculateTimeLeft = () => {
+  const calculateTimeLeft = useCallback(() => {
     const difference = +new Date(targetDate) - +new Date();
     let timeLeft: any = {};
     if (difference > 0) {
@@ -122,14 +140,14 @@ const Countdown = ({ targetDate }: { targetDate: string }) => {
       };
     }
     return timeLeft;
-  };
+  }, [targetDate]);
 
   const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
 
   useEffect(() => {
     const timer = setInterval(() => setTimeLeft(calculateTimeLeft()), 1000);
     return () => clearInterval(timer);
-  }, [targetDate]);
+  }, [calculateTimeLeft]);
 
   if (Object.keys(timeLeft).length === 0) return <span>Asta Terminata</span>;
 
@@ -164,7 +182,7 @@ const BidModal = ({ auction, onClose }: { auction: Auction, onClose: () => void 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
       <div className="bg-slate-900 border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
-        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
+        <button onClick={onClose} aria-label="Close" className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
         {!hasMembership ? (
           <div className="text-center py-8">
             <Ticket className="w-16 h-16 text-red-500 mx-auto mb-4" />
@@ -176,7 +194,7 @@ const BidModal = ({ auction, onClose }: { auction: Auction, onClose: () => void 
           <>
             <h3 className="text-2xl font-bold text-white mb-2">{t(UI.bid_modal_title)}</h3>
             <div className="flex items-center gap-3 mb-6 bg-slate-800 p-3 rounded-lg">
-              <img src={dish.imageUrl} className="w-12 h-12 rounded-md object-cover" />
+              <img src={dish.imageUrl} alt={t(dish.name)} className="w-12 h-12 rounded-md object-cover" />
               <div><p className="text-white font-medium">{t(dish.name)}</p><p className="text-slate-400 text-xs">NFT #{dish.id}</p></div>
             </div>
             <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 mb-6">
@@ -184,8 +202,8 @@ const BidModal = ({ auction, onClose }: { auction: Auction, onClose: () => void 
               <p className="text-2xl font-mono font-bold text-amber-500">€{auction.currentBid.toLocaleString()}</p>
             </div>
             <div className="mb-6">
-              <label className="block text-sm font-bold text-slate-300 mb-2">{t(UI.bid_modal_your_bid)}</label>
-              <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={`${minBid}`} className="w-full bg-slate-800 border border-slate-600 rounded-lg p-4 text-white text-lg focus:outline-none focus:border-amber-500" />
+              <label htmlFor="bid-amount" className="block text-sm font-bold text-slate-300 mb-2">{t(UI.bid_modal_your_bid)}</label>
+              <input id="bid-amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder={`${minBid}`} className="w-full bg-slate-800 border border-slate-600 rounded-lg p-4 text-white text-lg focus:outline-none focus:border-amber-500" />
             </div>
             <div className="flex gap-4">
               <button onClick={onClose} className="flex-1 py-3 text-slate-300 hover:bg-slate-800 rounded-xl">{t(UI.bid_modal_btn_cancel)}</button>
@@ -203,7 +221,7 @@ const BidModal = ({ auction, onClose }: { auction: Auction, onClose: () => void 
   );
 };
 
-// --- Components ---
+// --- Main Components ---
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -237,7 +255,7 @@ const Navbar = () => {
             <button className="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 px-4 rounded-full flex items-center gap-2"><Wallet className="h-4 w-4" />{t(UI.nav_connect)}</button>
           </div>
           <div className="flex md:hidden items-center gap-4">
-            <button onClick={() => setIsOpen(!isOpen)} className="text-gray-400 hover:text-white p-2">{isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}</button>
+            <button onClick={() => setIsOpen(!isOpen)} aria-label="Toggle menu" className="text-gray-400 hover:text-white p-2">{isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}</button>
           </div>
         </div>
       </div>
@@ -260,7 +278,7 @@ const HomePage = () => {
   return (
     <div>
       <div className="relative overflow-hidden bg-slate-900 py-24 sm:py-32">
-        <div className="absolute inset-0 bg-[url('https://picsum.photos/id/431/1920/1080')] bg-cover bg-center opacity-20"></div>
+        <div className="absolute inset-0 bg-[url('https://picsum.photos/id/431/1920/1080')] bg-cover bg-center opacity-20" aria-hidden="true"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent"></div>
         <div className="relative max-w-7xl mx-auto px-6 lg:px-8 z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -272,7 +290,6 @@ const HomePage = () => {
                 <Link to="/auctions" className="text-sm font-semibold leading-6 text-white hover:text-amber-400">{t(UI.nav_auctions)} →</Link>
               </div>
             </div>
-            
             <div className="relative group max-w-md mx-auto lg:mr-0 w-full">
                <LiveOrderFeed />
             </div>
@@ -317,7 +334,7 @@ const MarketplacePage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {DISHES.map((dish) => (
           <div key={dish.id} className="bg-slate-800 rounded-xl overflow-hidden border border-slate-700 group flex flex-col h-full">
-            <div className="h-48 relative overflow-hidden"><img src={dish.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /></div>
+            <div className="h-48 relative overflow-hidden"><img src={dish.imageUrl} alt={t(dish.name)} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" /></div>
             <div className="p-6 flex flex-col flex-grow">
               <div className="flex justify-between mb-2">
                 <h3 className="text-xl font-bold text-white">{t(dish.name)}</h3>
@@ -353,7 +370,7 @@ const AuctionsPage = () => {
           if (!dish) return null;
           return (
             <div key={a.id} className="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 flex flex-col">
-              <div className="h-64 relative"><img src={dish.imageUrl} className="w-full h-full object-cover" /><div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase animate-pulse">LIVE</div></div>
+              <div className="h-64 relative"><img src={dish.imageUrl} alt={t(dish.name)} className="w-full h-full object-cover" /><div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1 rounded-full text-xs font-bold uppercase animate-pulse">LIVE</div></div>
               <div className="p-8">
                 <h3 className="text-2xl font-bold text-white mb-4">{t(dish.name)}</h3>
                 <div className="bg-slate-900/50 rounded-xl p-6 mb-6 flex justify-between">
@@ -372,8 +389,7 @@ const AuctionsPage = () => {
 
 const DishDetailPage = () => {
   const { t } = useLanguage();
-  const location = useLocation();
-  const id = location.pathname.split('/').pop();
+  const { id } = useParams<{ id: string }>();
   const dish = DISHES.find(d => d.id === id);
   const auction = AUCTIONS.find(a => a.dishId === id);
   const [selectedAuction, setSelectedAuction] = useState<Auction | null>(null);
@@ -396,7 +412,7 @@ const DishDetailPage = () => {
       <Link to="/marketplace" className="text-slate-400 hover:text-amber-400 mb-6 inline-block">← {t(UI.detail_back)}</Link>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div className="space-y-8">
-          <img src={dish.imageUrl} className="w-full h-96 object-cover rounded-2xl shadow-2xl border border-slate-700" />
+          <img src={dish.imageUrl} alt={t(dish.name)} className="w-full h-96 object-cover rounded-2xl shadow-2xl border border-slate-700" />
           <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
             <h3 className="text-lg font-bold text-white mb-4">{t(UI.detail_oracle_feed)}</h3>
             <div className="space-y-3">
@@ -478,11 +494,11 @@ const TicketsPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {MEMBERSHIPS.map((m) => (
           <div key={m.id} className="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 flex flex-col">
-            <img src={m.imageUrl} className="h-48 w-full object-cover" />
+            <img src={m.imageUrl} alt={t(m.name)} className="h-48 w-full object-cover" />
             <div className="p-8 flex-grow flex flex-col">
               <h3 className="text-2xl font-bold text-white mb-2">{t(m.name)}</h3>
               <p className="text-slate-400 mb-6">{t(m.benefit)}</p>
-              <div className="mt-auto"><div className="text-3xl font-bold text-white mb-4">€{m.price}</div><button onClick={() => handleBuy(m)} className="w-full bg-indigo-600 hover:bg-indigo-50 text-slate-900 font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"><Ticket size={20} /> {t(UI.membership_buy)}</button></div>
+              <div className="mt-auto"><div className="text-3xl font-bold text-white mb-4">€{m.price}</div><button onClick={() => handleBuy(m)} className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 transition-colors"><Ticket size={20} /> {t(UI.membership_buy)}</button></div>
             </div>
           </div>
         ))}
@@ -518,7 +534,7 @@ const PizzaLabPage = () => {
       <p className="text-slate-400 mb-12">{t(UI.pizza_lab_subtitle)}</p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
         <div className="space-y-8">
-          <div><label className="block text-slate-300 font-bold mb-2">{t(UI.pizza_lab_name_label)}</label><input value={name} onChange={e => setName(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 text-white focus:border-amber-500 outline-none" placeholder="Nome Pizza..." /></div>
+          <div><label htmlFor="pizza-name" className="block text-slate-300 font-bold mb-2">{t(UI.pizza_lab_name_label)}</label><input id="pizza-name" value={name} onChange={e => setName(e.target.value)} className="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 text-white focus:border-amber-500 outline-none" placeholder="Nome Pizza..." /></div>
           <div className="grid grid-cols-2 gap-4">
             {TOPPINGS.map(top => (
               <button key={top.id} onClick={() => setSelected(s => s.includes(top.id) ? s.filter(x => x !== top.id) : [...s, top.id])} className={`p-4 border rounded-xl text-left transition-all ${selected.includes(top.id) ? 'border-amber-500 bg-amber-500/10 text-white' : 'border-slate-700 bg-slate-800 text-slate-400'}`}>
