@@ -233,6 +233,11 @@ export const UI: GlobalTranslations = {
     auction_btn_bid: { en: 'Place Bid', it: 'Fai Offerta' },
     auction_live: { en: 'Live', it: 'Live' },
 
+    // Live Feed
+    live_feed_title: { en: 'Oracle Order Stream', it: 'Feed Ordini Oracolo' },
+    live_feed_subtitle: { en: 'Real-time sales from physical location', it: 'Vendite in tempo reale dal locale fisico' },
+    live_feed_verified: { en: 'Verified on chain', it: 'Verificato on-chain' },
+
     // Pizza Lab
     pizza_lab_title: { en: 'Pizza Lab: Creator Economy', it: 'Pizza Lab: Creator Economy' },
     pizza_lab_subtitle: { 

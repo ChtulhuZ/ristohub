@@ -1,6 +1,6 @@
 import React, { useState, createContext, useContext, useEffect, useMemo } from 'react';
 import { HashRouter, Routes, Route, Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, ScrollText, Wallet, Menu, X, ChefHat, Globe, Gavel, Timer, ArrowRight, CheckCircle, Pizza, Plus, Zap, Ticket, Share2, Copy, Gift } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, ScrollText, Wallet, Menu, X, ChefHat, Globe, Gavel, Timer, ArrowRight, CheckCircle, Pizza, Plus, Zap, Ticket, Share2, Copy, Gift, Activity } from 'lucide-react';
 import { DISHES, ROADMAP, UI, AUCTIONS, TOPPINGS, MEMBERSHIPS } from './constants';
 import { Dish, Language, LocalizedContent, Auction, CustomPizza, Membership } from './types';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
@@ -19,7 +19,7 @@ const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children })
   return (
     <LanguageContext.Provider value={{ lang, setLang, t }}>
       {children}
-    </LanguageContext.Provider>
+    </LanguageProvider>
   );
 };
 
@@ -37,6 +37,77 @@ const Store = {
 };
 
 // --- Helper Components ---
+
+const LiveOrderFeed = () => {
+  const { t } = useLanguage();
+  const [orders, setOrders] = useState<Array<{ id: string; dish: Dish; timestamp: string }>>([]);
+
+  useEffect(() => {
+    // Initial random orders
+    const initialOrders = Array.from({ length: 3 }).map((_, i) => ({
+      id: Math.random().toString(36).substr(2, 9).toUpperCase(),
+      dish: DISHES[Math.floor(Math.random() * DISHES.length)],
+      timestamp: new Date(Date.now() - (i * 120000)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }));
+    setOrders(initialOrders);
+
+    const interval = setInterval(() => {
+      const newOrder = {
+        id: Math.random().toString(36).substr(2, 9).toUpperCase(),
+        dish: DISHES[Math.floor(Math.random() * DISHES.length)],
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      setOrders(prev => [newOrder, ...prev].slice(0, 6));
+    }, 4500); // New order every 4.5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="bg-white text-slate-900 rounded-sm shadow-xl p-4 sm:p-6 font-mono border-t-4 border-amber-500 relative overflow-hidden transform rotate-1 sm:rotate-2">
+      {/* Receipt zig-zag effect top/bottom could be done with CSS, but let's stick to sleek panel */}
+      <div className="absolute top-0 right-0 p-2 opacity-10">
+        <Activity size={48} />
+      </div>
+      
+      <div className="flex justify-between items-start border-b-2 border-dashed border-slate-300 pb-4 mb-4">
+        <div>
+          <h3 className="font-bold text-lg uppercase leading-none">{t(UI.live_feed_title)}</h3>
+          <p className="text-[10px] text-slate-500 mt-1 uppercase">{t(UI.live_feed_subtitle)}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-[10px] font-bold">TERMINAL #GS-01</p>
+          <p className="text-[10px]">{new Date().toLocaleDateString()}</p>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        {orders.map((order, idx) => (
+          <div key={order.id} className={`flex justify-between items-center animate-in fade-in slide-in-from-top-4 duration-500 ${idx === 0 ? 'text-amber-600 font-bold' : 'text-slate-600'}`}>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-slate-400">[{order.timestamp}]</span>
+                <span className="uppercase text-sm truncate max-w-[140px]">{t(order.dish.name)}</span>
+              </div>
+              <div className="flex items-center gap-1 text-[8px] text-slate-400 mt-0.5">
+                <CheckCircle size={8} /> {t(UI.live_feed_verified)} #{order.id}
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-xs uppercase px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[8px]">SERVED</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-6 pt-4 border-t-2 border-dashed border-slate-300 text-center">
+        <div className="inline-block px-3 py-1 bg-amber-100 rounded text-amber-800 text-[10px] font-bold animate-pulse uppercase">
+          Waiting for POS Pulse...
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const Countdown = ({ targetDate }: { targetDate: string }) => {
   const calculateTimeLeft = () => {
@@ -191,12 +262,20 @@ const HomePage = () => {
       <div className="relative overflow-hidden bg-slate-900 py-24 sm:py-32">
         <div className="absolute inset-0 bg-[url('https://picsum.photos/id/431/1920/1080')] bg-cover bg-center opacity-20"></div>
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent"></div>
-        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 text-center z-10">
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl mb-6">{t(UI.hero_title_1)} <span className="text-amber-500">{t(UI.hero_title_2)}</span></h1>
-          <p className="mt-6 text-lg leading-8 text-gray-300 max-w-2xl mx-auto">{t(UI.hero_subtitle)}</p>
-          <div className="mt-10 flex items-center justify-center gap-x-6">
-            <Link to="/marketplace" className="rounded-md bg-amber-500 px-6 py-3 text-lg font-semibold text-slate-900 shadow-sm hover:bg-amber-400 transition-all">{t(UI.hero_cta_explore)}</Link>
-            <Link to="/auctions" className="text-sm font-semibold leading-6 text-white hover:text-amber-400">{t(UI.nav_auctions)} →</Link>
+        <div className="relative max-w-7xl mx-auto px-6 lg:px-8 z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="text-center lg:text-left">
+              <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl mb-6">{t(UI.hero_title_1)} <span className="text-amber-500">{t(UI.hero_title_2)}</span></h1>
+              <p className="mt-6 text-lg leading-8 text-gray-300 max-w-2xl mx-auto lg:mx-0">{t(UI.hero_subtitle)}</p>
+              <div className="mt-10 flex items-center justify-center lg:justify-start gap-x-6">
+                <Link to="/marketplace" className="rounded-md bg-amber-500 px-6 py-3 text-lg font-semibold text-slate-900 shadow-sm hover:bg-amber-400 transition-all">{t(UI.hero_cta_explore)}</Link>
+                <Link to="/auctions" className="text-sm font-semibold leading-6 text-white hover:text-amber-400">{t(UI.nav_auctions)} →</Link>
+              </div>
+            </div>
+            
+            <div className="relative group max-w-md mx-auto lg:mr-0 w-full">
+               <LiveOrderFeed />
+            </div>
           </div>
         </div>
       </div>
