@@ -15,7 +15,8 @@ import {
   Plus, 
   Ticket, 
   Gift, 
-  Activity 
+  Activity,
+  Infinity
 } from 'lucide-react';
 import { DISHES, UI, AUCTIONS, TOPPINGS, MEMBERSHIPS } from './constants';
 import { Dish, Language, LocalizedContent, Auction, CustomPizza, Membership } from './types';
@@ -57,12 +58,67 @@ const Store = {
 
 // --- Helper Components ---
 
+const TicketIllustration = ({ id }: { id: string }) => {
+  // Common ticket shape part
+  const TicketShape = ({ className }: { className?: string }) => (
+    <div className={`relative w-32 h-20 rounded-lg flex items-center justify-center border-2 shadow-lg ${className}`}>
+      <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-slate-800 rounded-full border-r-2 border-inherit"></div>
+      <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-slate-800 rounded-full border-l-2 border-inherit"></div>
+      <div className="flex flex-col items-center">
+        <Ticket size={24} className="mb-1 opacity-50" />
+        <div className="w-16 h-0.5 bg-current opacity-20 my-1"></div>
+        <span className="text-[10px] font-mono font-bold tracking-tighter opacity-80">GASTRO-DAO</span>
+      </div>
+    </div>
+  );
+
+  if (id === 'm1') {
+    return (
+      <div className="h-48 w-full bg-slate-900/50 flex items-center justify-center overflow-hidden">
+        <TicketShape className="bg-orange-950/40 border-orange-500 text-orange-500" />
+      </div>
+    );
+  }
+
+  if (id === 'm2') {
+    return (
+      <div className="h-48 w-full bg-slate-900/50 flex items-center justify-center overflow-hidden relative">
+        <div className="relative">
+          <TicketShape className="bg-slate-700/40 border-slate-400 text-slate-400 rotate-[-12deg] absolute -left-12 -top-6 scale-90 opacity-60" />
+          <TicketShape className="bg-slate-700/40 border-slate-300 text-slate-300 rotate-[8deg] absolute -right-12 -top-4 scale-95 opacity-80" />
+          <TicketShape className="bg-slate-800/80 border-slate-100 text-white relative z-10" />
+        </div>
+      </div>
+    );
+  }
+
+  if (id === 'm3') {
+    return (
+      <div className="h-48 w-full bg-slate-900/50 flex items-center justify-center overflow-hidden group">
+        <div className="relative">
+          <div className="absolute inset-0 bg-yellow-500/20 blur-2xl group-hover:blur-3xl transition-all animate-pulse"></div>
+          <div className="relative w-36 h-24 bg-gradient-to-br from-yellow-400 to-yellow-700 rounded-xl flex items-center justify-center border-4 border-yellow-200 shadow-[0_0_30px_rgba(234,179,8,0.4)] overflow-hidden">
+             <div className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full border-r-4 border-yellow-200"></div>
+             <div className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 bg-slate-900 rounded-full border-l-4 border-yellow-200"></div>
+             <div className="flex flex-col items-center text-slate-900">
+               <Infinity size={48} className="animate-bounce" />
+               <span className="text-[10px] font-black uppercase tracking-widest mt-1">MASTER ACCESS</span>
+             </div>
+             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/30 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+};
+
 const LiveOrderFeed = () => {
   const { t } = useLanguage();
   const [orders, setOrders] = useState<Array<{ id: string; dish: Dish; timestamp: string }>>([]);
 
   useEffect(() => {
-    // Initial random orders
     const initialOrders = Array.from({ length: 3 }).map((_, i) => ({
       id: Math.random().toString(36).substring(2, 11).toUpperCase(),
       dish: DISHES[Math.floor(Math.random() * DISHES.length)],
@@ -507,8 +563,8 @@ const TicketsPage = () => {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {MEMBERSHIPS.map((m) => (
-          <div key={m.id} className="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 flex flex-col">
-            <img src={m.imageUrl} alt={t(m.name)} className="h-48 w-full object-cover" />
+          <div key={m.id} className="bg-slate-800 rounded-2xl overflow-hidden border border-slate-700 flex flex-col group hover:border-amber-500/50 transition-all duration-300">
+            <TicketIllustration id={m.id} />
             <div className="p-8 flex-grow flex flex-col">
               <h3 className="text-2xl font-bold text-white mb-2">{t(m.name)}</h3>
               <p className="text-slate-400 mb-6">{t(m.benefit)}</p>
