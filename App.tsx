@@ -56,10 +56,30 @@ const Store = {
   referralCount: 7,
 };
 
+// --- Live Feed Data ---
+const RAW_RECEIPTS = [
+  { id: 42788, table: "8", time: "14:18", items: [{ name: "ORSETTO", price: 10 }, { name: "MENU COMPLETO", price: 14 }] },
+  { id: 42789, table: "15", time: "14:15", items: [{ name: "MENU COMPLETO", price: 20 }] },
+  { id: 42790, table: "14", time: "14:14", items: [{ name: "MENU COMPLETO", price: 14 }] },
+  { id: 42791, table: "14", time: "14:13", items: [{ name: "MENU COMPLETO", price: 14 }] },
+  { id: 42792, table: "14", time: "14:07", items: [{ name: "MENU COMPLETO", price: 14 }] },
+  { id: 42793, table: "9", time: "14:02", items: [{ name: "MENU COMPLETO", price: 14 }, { name: "ORSETTO", price: 10 }] }
+];
+
+// Flattening for the stream
+const STREAMABLE_ITEMS = RAW_RECEIPTS.flatMap(r => 
+  r.items.map(i => ({
+    receiptId: r.id,
+    table: r.table,
+    name: i.name,
+    price: i.price,
+    time: r.time
+  }))
+);
+
 // --- Helper Components ---
 
 const TicketIllustration = ({ id }: { id: string }) => {
-  // Common ticket shape part
   const TicketShape = ({ className }: { className?: string }) => (
     <div className={`relative w-32 h-20 rounded-lg flex items-center justify-center border-2 shadow-lg ${className}`}>
       <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-4 bg-slate-800 rounded-full border-r-2 border-inherit"></div>
@@ -116,27 +136,24 @@ const TicketIllustration = ({ id }: { id: string }) => {
 
 const LiveOrderFeed = () => {
   const { t } = useLanguage();
-  const [orders, setOrders] = useState<Array<{ id: string; dish: Dish; timestamp: string }>>([]);
+  const [orders, setOrders] = useState<Array<typeof STREAMABLE_ITEMS[0]>>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
-    const initialOrders = Array.from({ length: 3 }).map((_, i) => ({
-      id: Math.random().toString(36).substring(2, 11).toUpperCase(),
-      dish: DISHES[Math.floor(Math.random() * DISHES.length)],
-      timestamp: new Date(Date.now() - (i * 120000)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    }));
-    setOrders(initialOrders);
+    // Initial batch
+    setOrders(STREAMABLE_ITEMS.slice(0, 4));
+    setCurrentIndex(4);
 
     const interval = setInterval(() => {
-      const newOrder = {
-        id: Math.random().toString(36).substring(2, 11).toUpperCase(),
-        dish: DISHES[Math.floor(Math.random() * DISHES.length)],
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setOrders(prev => [newOrder, ...prev].slice(0, 6));
-    }, 4500);
+      setOrders(prev => {
+        const nextItem = STREAMABLE_ITEMS[currentIndex % STREAMABLE_ITEMS.length];
+        setCurrentIndex(prevIdx => prevIdx + 1);
+        return [nextItem, ...prev].slice(0, 6);
+      });
+    }, 4000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [currentIndex]);
 
   return (
     <div className="bg-white text-slate-900 rounded-sm shadow-xl p-4 sm:p-6 font-mono border-t-4 border-amber-500 relative overflow-hidden transform rotate-1 sm:rotate-2">
@@ -157,18 +174,18 @@ const LiveOrderFeed = () => {
 
       <div className="space-y-4">
         {orders.map((order, idx) => (
-          <div key={order.id} className={`flex justify-between items-center animate-in fade-in slide-in-from-top-4 duration-500 ${idx === 0 ? 'text-amber-600 font-bold' : 'text-slate-600'}`}>
+          <div key={`${order.receiptId}-${order.name}-${idx}`} className={`flex justify-between items-center animate-in fade-in slide-in-from-top-4 duration-500 ${idx === 0 ? 'text-amber-600 font-bold' : 'text-slate-600'}`}>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-400">[{order.timestamp}]</span>
-                <span className="uppercase text-sm truncate max-w-[140px]">{t(order.dish.name)}</span>
+                <span className="text-[10px] text-slate-400">[{order.time}]</span>
+                <span className="uppercase text-sm truncate max-w-[140px]">{order.name}</span>
               </div>
               <div className="flex items-center gap-1 text-[8px] text-slate-400 mt-0.5">
-                <CheckCircle size={8} /> {t(UI.live_feed_verified)} #{order.id}
+                <CheckCircle size={8} /> {t(UI.live_feed_verified)} #{order.receiptId}
               </div>
             </div>
             <div className="text-right">
-              <span className="text-xs uppercase px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[8px]">SERVED</span>
+              <span className="text-xs font-bold">€{order.price.toFixed(2)}</span>
             </div>
           </div>
         ))}
